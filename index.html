@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>個人消費向け3Dプリント市場（2024〜2025）</title>
+  <!-- CSS -->
+  <style>
+    :root {
+      --bg: #f7f7f7;
+      --fg: #333;
+      --accent: #0077cc;
+    }
+    [data-theme="dark"] {
+      --bg: #111;
+      --fg: #e0e0e0;
+      --accent: #4dabf7;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, sans-serif; line-height: 1.6; background: var(--bg); color: var(--fg); }
+    header { position: sticky; top: 0; z-index: 100; background: var(--accent); color: #fff; padding: .75rem 1rem; display: flex; align-items: center; justify-content: space-between; }
+    header h1 { margin: 0; font-size: 1.1rem; }
+    nav a { color: #fff; margin-right: 1rem; text-decoration: none; font-size: .9rem; }
+    nav a:hover { text-decoration: underline; }
+    main { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
+    section { margin-bottom: 2.5rem; }
+    h2 { border-left: 4px solid var(--accent); padding-left: .5rem; font-size: 1.2rem; margin-bottom: .5rem; }
+    ul { padding-left: 1.5rem; margin: .25rem 0 1rem; }
+    /* Search */
+    #searchWrap { margin: 1rem 0 2rem; display: flex; gap: .5rem; }
+    #searchInput { flex: 1; padding: .5rem .75rem; font-size: .9rem; border: 1px solid #ccc; border-radius: 4px; }
+    button { cursor: pointer; border: none; background: var(--accent); color: #fff; padding: .5rem 1rem; border-radius: 4px; font-size: .9rem; }
+    button:hover { opacity: .9; }
+    canvas { max-width: 100%; height: 300px; }
+    footer { text-align: center; font-size: .8rem; padding: 2rem 0; color: #777; }
+    /* Accordion */
+    details summary { cursor: pointer; font-weight: 600; }
+    details ul { margin-top: .5rem; }
+  </style>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>3Dプリント市場ダッシュボード</h1>
+    <nav>
+      <a href="#market">市場規模</a>
+      <a href="#categories">カテゴリ</a>
+      <a href="#trends">トレンド</a>
+      <a href="#players">企業</a>
+    </nav>
+    <button id="themeToggle" aria-label="テーマ切替">🌙</button>
+  </header>
+
+  <main>
+    <!-- Search -->
+    <div id="searchWrap">
+      <input id="searchInput" type="search" placeholder="キーワードでフィルタ…">
+      <button id="resetBtn">リセット</button>
+    </div>
+
+    <!-- Market Size -->
+    <section id="market">
+      <h2>1. 市場規模と成長率</h2>
+      <canvas id="marketChart"></canvas>
+      <p>2023年は26億ドル、2033年には約282億ドルへと予測されています（CAGR約26.8%）。</p>
+    </section>
+
+    <!-- Categories -->
+    <section id="categories">
+      <h2>2. 主な製品カテゴリ</h2>
+      <details open>
+        <summary>アクセサリー</summary>
+        <ul><li>ジュエリー（リング・ネックレス等）</li><li>スマホケース</li></ul>
+      </details>
+      <details open>
+        <summary>ホビー</summary>
+        <ul><li>模型・フィギュア</li><li>教育玩具・ボードゲーム用コマ</li></ul>
+      </details>
+      <details open>
+        <summary>家庭用品</summary>
+        <ul><li>日用品・便利グッズ</li><li>修理用交換パーツ</li></ul>
+      </details>
+      <details open>
+        <summary>ファッション</summary>
+        <ul><li>靴・ミッドソール</li><li>眼鏡フレーム</li></ul>
+      </details>
+      <details open>
+        <summary>インテリア</summary>
+        <ul><li>家具・照明</li><li>アート装飾品</li></ul>
+      </details>
+    </section>
+
+    <!-- Trends -->
+    <section id="trends">
+      <h2>3. 主なトレンド</h2>
+      <ul id="trendList">
+        <li>パーソナライズ需要</li>
+        <li>環境配慮素材の利用</li>
+        <li>ユーザー主導デザイン</li>
+        <li>オンデマンド生産</li>
+        <li>高速・高精細プリント</li>
+      </ul>
+    </section>
+
+    <!-- Players -->
+    <section id="players">
+      <h2>4. 主なプレイヤー</h2>
+      <ul>
+        <li><strong>Etsy / CGTrader</strong> – マーケットプレイス</li>
+        <li><strong>Materialise / Sculpteo</strong> – 造形サービス</li>
+        <li><strong>Adidas × Carbon</strong> – 量産スニーカー</li>
+        <li><strong>Stratasys / Bambu Lab</strong> – プリンターメーカー</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    &copy; 2025 3D Print Insight
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    console.log("ページ読み込み開始");
+
+    // Theme toggle
+    const themeToggle = document.getElementById("themeToggle");
+    themeToggle.addEventListener("click", () => {
+      const isDark = document.documentElement.toggleAttribute("data-theme", "dark");
+      themeToggle.textContent = isDark ? "☀️" : "🌙";
+    });
+
+    // Smooth scroll for nav
+    document.querySelectorAll("nav a").forEach(a => {
+      a.addEventListener("click", e => {
+        e.preventDefault();
+        const id = a.getAttribute("href").substring(1);
+        document.getElementById(id).scrollIntoView({ behavior: "smooth" });
+      });
+    });
+
+    // Chart.js Market size bar chart
+    const ctx = document.getElementById("marketChart").getContext("2d");
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: ["2023", "2033 (予測)"],
+        datasets: [{
+          label: "市場規模 (億ドル)",
+          data: [26, 282],
+          backgroundColor: ["#4dabf7", "#ffaf00"]
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    // Search filter
+    const searchInput = document.getElementById("searchInput");
+    const resetBtn = document.getElementById("resetBtn");
+    const filterItems = () => {
+      const q = searchInput.value.trim().toLowerCase();
+      document.querySelectorAll("main li").forEach(li => {
+        li.style.display = li.textContent.toLowerCase().includes(q) ? "list-item" : "none";
+      });
+    };
+    searchInput.addEventListener("input", filterItems);
+    resetBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      filterItems();
+    });
+
+    // Initial log of sections
+    document.addEventListener("DOMContentLoaded", () => {
+      console.log("DOMが完全に読み込まれました");
+      const sections = document.querySelectorAll("main section");
+      console.log("セクション数:", sections.length);
+      sections.forEach((section, idx) => console.log(`セクション${idx + 1}:`, section.querySelector("h2").textContent));
+    });
+  </script>
+</body>
+</html>
